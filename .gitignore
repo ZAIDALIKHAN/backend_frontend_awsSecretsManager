@@ -1,0 +1,42 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.swp
+*~
+
+# AWS
+.aws/
+aws/
+
+# Kubernetes
+kubeconfig*
+*.kubeconfig
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.env
+.env
+
+# Archives
+*.zip
+*.tar
+*.gz
+
+# Python
+__pycache__/
+*.pyc
+venv/

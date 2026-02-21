@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: python:3.11-slim
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: mysql-prod
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              pip install flask mysql-connector-python &&
+              cat <<EOF > app.py
+              from flask import Flask
+              import mysql.connector
+              import os
+
+              app = Flask(__name__)
+
+              def get_conn():
+                  return mysql.connector.connect(
+                      host=os.getenv("DB_HOST"),
+                      user=os.getenv("DB_USER"),
+                      password=os.getenv("DB_PASSWORD"),
+                      database=os.getenv("DB_NAME"),
+                      port=int(os.getenv("DB_PORT"))
+                  )
+
+              @app.route("/health")
+              def health():
+                  return "OK", 200
+
+              @app.route("/db")
+              def db():
+                  conn = get_conn()
+                  cur = conn.cursor()
+                  cur.execute("SELECT VERSION()")
+                  v = cur.fetchone()
+                  cur.close()
+                  conn.close()
+                  return {"mysql_version": v[0]}
+
+              app.run(host="0.0.0.0", port=5000)
+              EOF
+              python app.py
